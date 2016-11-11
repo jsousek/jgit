@@ -578,8 +578,11 @@ public class CloneCommand extends TransportCommand<CloneCommand, Git> {
 	 * @param depth
 	 *            if depth == 0 then history will be cloned completely.
 	 *            otherwise the history will be truncated to the specified
-	 *            number of commits
+	 *            number of commits.
 	 * @return {@code this}
+	 * @throws IllegalArgumentException
+	 *             if depth is negative an <code>IllegalArgumentException</code>
+	 *             will be thrown
 	 * @since 4.6
 	 */
 	public CloneCommand setDepth(int depth) {
