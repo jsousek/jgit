@@ -138,12 +138,23 @@ class FetchProcess {
 		try {
 			result.setAdvertisedRefs(transport.getURI(), conn.getRefsMap());
 			result.peerUserAgent = conn.getPeerUserAgent();
-			final Set<Ref> matched = new HashSet<>();
+			final Set<Ref> matched = new HashSet<Ref>();
+			// System.out.println("FetchProcess.fetchObjects.askFor.size()='"
+			// + askFor.size() + "'");
+			// System.out.println("FetchProcess.fetchObjects.have.size()='"
+			// + have.size() + "'");
+			// System.out.println("FetchProcess.fetchObjects.toFetch.size()='"
+			// + toFetch.size() + "'");
+			// System.out.println("FetchProcess.fetchObjects.con.getRefs.size()='"
+			// + conn.getRefs().size() + "'");
+			// System.out.println("FetchProcess.fetchObjects.con.getRefs.get(0)='"
+			// + toFetch.iterator().next() + "'");
 			for (final RefSpec spec : toFetch) {
 				if (spec.getSource() == null)
 					throw new TransportException(MessageFormat.format(
 							JGitText.get().sourceRefNotSpecifiedForRefspec, spec));
-
+				// System.out.println("FetchProcess.executeImp.spec.isWildcard='"
+				// + spec.isWildcard() + "'");
 				if (spec.isWildcard())
 					expandWildcard(spec, matched);
 				else
@@ -152,13 +163,17 @@ class FetchProcess {
 
 			Collection<Ref> additionalTags = Collections.<Ref> emptyList();
 			final TagOpt tagopt = transport.getTagOpt();
+			System.out
+					.println("FetchProcess.executeImp.tagopt='" + tagopt + "'");
 			if (tagopt == TagOpt.AUTO_FOLLOW)
 				additionalTags = expandAutoFollowTags();
 			else if (tagopt == TagOpt.FETCH_TAGS)
 				expandFetchTags();
 
+
 			final boolean includedTags;
 			if (!askFor.isEmpty() && !askForIsComplete()) {
+				// System.out.println("FetchProcess.executeImpl.inIfAskFor");
 				fetchObjects(monitor);
 				includedTags = conn.didFetchIncludeTags();
 
@@ -206,6 +221,7 @@ class FetchProcess {
 			if (transport.isRemoveDeletedRefs())
 				deleteStaleTrackingRefs(result, batch);
 			for (TrackingRefUpdate u : localUpdates) {
+				System.out.println("FetchProcess.executeImpl.u='" + u + "'");
 				result.add(u);
 				batch.addCommand(u.asReceiveCommand());
 			}
@@ -243,6 +259,21 @@ class FetchProcess {
 			throws TransportException {
 		try {
 			conn.setPackLockMessage("jgit fetch " + transport.uri); //$NON-NLS-1$
+			System.out.println("FetchProcess.fetchObjects.askFor.size()='"
+					+ askFor.size() + "'");
+			// Iterator<Ref> it = askFor.values().iterator();
+			// System.out.println("FetchProcess.fetchObjects.askFor.get(0)='"
+			// + it.next() + "'");
+			// System.out.println("FetchProcess.fetchObjects.askFor.get(1)='"
+			// + it.next() + "'");
+			// System.out.println("FetchProcess.fetchObjects.askFor.get(2)='"
+			// + it.next() + "'");
+			// System.out.println("FetchProcess.fetchObjects.askFor.get(3)='"
+			// + it.next() + "'");
+			// System.out.println("FetchProcess.fetchObjects.have.size()='"
+			// + have.size() + "'");
+			// System.out.println("FetchProcess.fetchObject.conn.class='"
+			// + conn.getClass() + "'");
 			conn.fetch(monitor, askFor.values(), have);
 		} finally {
 			packLocks.addAll(conn.getPackLocks());
@@ -291,6 +322,8 @@ class FetchProcess {
 				removeTrackingRefUpdate(want.getObjectId());
 			}
 		}
+		System.out.println("FetchProcess.reopenConnection.askFor.size()='"
+				+ askFor.size() + "'");
 	}
 
 	private void removeTrackingRefUpdate(final ObjectId want) {
@@ -315,12 +348,23 @@ class FetchProcess {
 		File meta = transport.local.getDirectory();
 		if (meta == null)
 			return;
+		System.out.println("FetchProcess.updateFETCH_HEAD");
+		System.out.println(
+				"FetchProcess.updateFETCH_HEAD.fetchHeadUpdates.size()='"
+						+ fetchHeadUpdates.size() + "'");
+		System.out.println(
+				"FetchProcess.updateFETCH_HEAD.fetchHeadUpdates.get(0)='"
+						+ fetchHeadUpdates.get(0) + "'");
+
 		final LockFile lock = new LockFile(new File(meta, "FETCH_HEAD")); //$NON-NLS-1$
 		try {
 			if (lock.lock()) {
 				final Writer w = new OutputStreamWriter(lock.getOutputStream());
 				try {
 					for (final FetchHeadRecord h : fetchHeadUpdates) {
+						System.out.println(
+								"FetchProcess.updateFETCH_HEAD.h.sourceName='"
+										+ h.sourceName + "'");
 						h.write(w);
 						result.add(h);
 					}

@@ -75,6 +75,7 @@ import org.eclipse.jgit.transport.FetchResult;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.TagOpt;
+import org.eclipse.jgit.transport.Transport;
 import org.eclipse.jgit.transport.URIish;
 import org.eclipse.jgit.util.FS;
 import org.eclipse.jgit.util.FileUtils;
@@ -114,6 +115,8 @@ public class CloneCommand extends TransportCommand<CloneCommand, Git> {
 	private boolean directoryExistsInitially;
 
 	private boolean gitDirExistsInitially;
+	
+	private int depth = Transport.DEPTH_INFINITE;
 
 	/**
 	 * Callback for status of clone operation.
@@ -261,6 +264,18 @@ public class CloneCommand extends TransportCommand<CloneCommand, Git> {
 		return command.call().getRepository();
 	}
 
+	/***
+	 * If depth == 0 it returns a wild-card, otherwise this function returns the
+	 * branch name as String
+	 *
+	 * @return branch name
+	 */
+	private String getBranchNameWithConsideredDepth() {
+		// final String result = (depth > 0 ? this.branch : "*"); //$NON-NLS-1$
+		final String result = "*"; //$NON-NLS-1$
+		return result;
+	}
+
 	private FetchResult fetch(Repository clonedRepo, URIish u)
 			throws URISyntaxException,
 			org.eclipse.jgit.api.errors.TransportException, IOException,
@@ -269,11 +284,14 @@ public class CloneCommand extends TransportCommand<CloneCommand, Git> {
 		RemoteConfig config = new RemoteConfig(clonedRepo.getConfig(), remote);
 		config.addURI(u);
 
+		final String branchName = getBranchNameWithConsideredDepth();
+
 		final String dst = (bare ? Constants.R_HEADS : Constants.R_REMOTES
-				+ config.getName() + "/") + "*"; //$NON-NLS-1$//$NON-NLS-2$
+				+ config.getName() + "/") + branchName; //$NON-NLS-1$
 		RefSpec refSpec = new RefSpec();
 		refSpec = refSpec.setForceUpdate(true);
-		refSpec = refSpec.setSourceDestination(Constants.R_HEADS + "*", dst); //$NON-NLS-1$
+		refSpec = refSpec.setSourceDestination(Constants.R_HEADS + branchName,
+				dst);
 
 		config.addFetchRefSpec(refSpec);
 		config.update(clonedRepo.getConfig());
@@ -284,7 +302,14 @@ public class CloneCommand extends TransportCommand<CloneCommand, Git> {
 		FetchCommand command = new FetchCommand(clonedRepo);
 		command.setRemote(remote);
 		command.setProgressMonitor(monitor);
-		command.setTagOpt(TagOpt.FETCH_TAGS);
+		if (this.depth != Transport.DEPTH_INFINITE) {
+			command.setTagOpt(TagOpt.NO_TAGS);
+		}
+		command.setDepth(this.depth);
+		// } else {
+		// command.setTagOpt(TagOpt.FETCH_TAGS);
+		// }
+		// command.setTagOpt(this.tagOption);
 		configure(command);
 
 		List<RefSpec> specs = calculateRefSpecs(dst);
@@ -296,16 +321,22 @@ public class CloneCommand extends TransportCommand<CloneCommand, Git> {
 	private List<RefSpec> calculateRefSpecs(final String dst) {
 		RefSpec wcrs = new RefSpec();
 		wcrs = wcrs.setForceUpdate(true);
-		wcrs = wcrs.setSourceDestination(Constants.R_HEADS + "*", dst); //$NON-NLS-1$
-		List<RefSpec> specs = new ArrayList<>();
+		final String branchName = getBranchNameWithConsideredDepth();
+		wcrs = wcrs.setSourceDestination(Constants.R_HEADS + branchName, dst);
+		List<RefSpec> specs = new ArrayList<RefSpec>();
 		if (cloneAllBranches)
 			specs.add(wcrs);
 		else if (branchesToClone != null
 				&& branchesToClone.size() > 0) {
-			for (final String selectedRef : branchesToClone)
+			for (final String selectedRef : branchesToClone) {
+				System.out.println(
+						"\t" + "Branch to clone='" + selectedRef + "'");
 				if (wcrs.matchSource(selectedRef))
 					specs.add(wcrs.expandFromSource(selectedRef));
+			}
 		}
+		// System.out.println(
+		// "CloneCommand.calculateRefSpecs.specs='" + specs.size() + "'");
 		return specs;
 	}
 
@@ -677,5 +708,48 @@ public class CloneCommand extends TransportCommand<CloneCommand, Git> {
 			FileUtils.delete(child, FileUtils.RECURSIVE | FileUtils.SKIP_MISSING
 					| FileUtils.IGNORE_ERRORS);
 		}
+
+	/***
+	 * if depth != {@code org.eclipse.jgit.transport.Transport.DEPTH_INFINITE}
+	 * then the history will be truncated to the specified number of commits. if
+	 * depth == {@code org.eclipse.jgit.transport.Transport.DEPTH_INFINITE}.
+	 * then the history will be cloned completely.
+	 *
+	 * @return depth
+	 * @since 4.6
+	 */
+	public int getDepth() {
+		return depth;
 	}
+
+	/***
+	 * set depth to truncate history
+	 *
+	 * @param depth
+	 *            0 < depth <=
+	 *            {@code org.eclipse.jgit.transport.Transport.DEPTH_INFINITE}.
+	 *            If depth ==
+	 *            {@code org.eclipse.jgit.transport.Transport.DEPTH_INFINITE}
+	 *            then history will be cloned completely. otherwise the history
+	 *            will be truncated to the specified number of commits.
+	 * @return {@code this}
+	 * @throws IllegalArgumentException
+	 *             if depth is negative an <code>IllegalArgumentException</code>
+	 *             will be thrown
+	 * @since 4.6
+	 */
+	public CloneCommand setDepth(int depth) {
+		if (depth <= 0) {
+			throw new IllegalArgumentException(
+					MessageFormat.format(JGitText.get().invalidDepth,
+							Integer.valueOf(depth)));
+		}
+		else if (depth > 0 && depth < Transport.DEPTH_INFINITE) {
+			this.setCloneAllBranches(false);
+			this.setCloneSubmodules(false);
+		}
+		this.depth = depth;
+		return this;
+	}
+
 }

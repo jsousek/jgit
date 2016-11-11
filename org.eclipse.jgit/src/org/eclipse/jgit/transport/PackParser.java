@@ -532,6 +532,8 @@ public abstract class PackParser {
 
 			receiving.beginTask(JGitText.get().receivingObjects,
 					(int) expectedObjectCount);
+			System.out.println(
+					"PackParser.parse.objectCount='" + objectCount + "'");
 			try {
 				for (int done = 0; done < expectedObjectCount; done++) {
 					indexOneObject();
@@ -548,7 +550,26 @@ public abstract class PackParser {
 			if (!collisionCheckObjs.isEmpty()) {
 				checkObjectCollision();
 			}
+			if (!deferredCheckBlobs.isEmpty())
+				doDeferredCheckBlobs();
+			if (deltaCount > 0) {
+				System.out.println(
+						"PackParser.parse.deltaCount='" + deltaCount + "'");
+				if (resolving instanceof BatchingProgressMonitor) {
+					((BatchingProgressMonitor) resolving).setDelayStart(
+							1000,
+							TimeUnit.MILLISECONDS);
+				}
+				resolving.beginTask(JGitText.get().resolvingDeltas, deltaCount);
+				resolveDeltas(resolving);
+				if (entryCount < objectCount) {
+					if (!isAllowThin()) {
+						throw new IOException(MessageFormat.format(
+								JGitText.get().packHasUnresolvedDeltas,
+								Long.valueOf(objectCount - entryCount)));
+					}
 
+					resolveDeltasWithExternalBases(resolving);
 			if (deltaCount > 0) {
 				processDeltas(resolving);
 			}

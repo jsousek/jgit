@@ -432,6 +432,8 @@ public class RevWalk implements Iterable<RevCommit>, AutoCloseable {
 	 */
 	public RevCommit next() throws MissingObjectException,
 			IncorrectObjectTypeException, IOException {
+		System.out.println(Thread.currentThread().getName() + ":\t"
+				+ "RevWalk.next.pending='" + pending.getClass() + "'");
 		return pending.next();
 	}
 

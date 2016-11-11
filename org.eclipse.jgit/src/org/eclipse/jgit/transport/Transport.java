@@ -726,6 +726,7 @@ public abstract class Transport implements AutoCloseable {
 			}
 		}
 		return null;
+
 	}
 
 	/**
@@ -774,6 +775,16 @@ public abstract class Transport implements AutoCloseable {
 	 * likely do not care about any tags it publishes.
 	 */
 	private TagOpt tagopt = TagOpt.NO_TAGS;
+
+	/***
+	 * The largest signed integer means infinite depth
+	 */
+	public static int DEPTH_INFINITE = 0x7fffffff;
+
+	/***
+	 * fetch max. specified number of commits
+	 */
+	private int depth = DEPTH_INFINITE;
 
 	/** Should fetch request thin-pack if remote repository can produce it. */
 	private boolean fetchThin = DEFAULT_FETCH_THIN;
@@ -847,7 +858,7 @@ public abstract class Transport implements AutoCloseable {
 	}
 
 	/**
-	 * Get the URI this transport connects to.
+	 * Get the URI this transport FetchConnection connects to.
 	 * <p>
 	 * Each transport instance connects to at most one URI at any point in time.
 	 *
@@ -896,6 +907,37 @@ public abstract class Transport implements AutoCloseable {
 	 */
 	public void setTagOpt(final TagOpt option) {
 		tagopt = option != null ? option : TagOpt.AUTO_FOLLOW;
+	}
+
+	/***
+	 * if depth > 0 then the history will be truncated to the specified number
+	 * of commits
+	 *
+	 * @return depth
+	 * @since 4.6
+	 */
+	public int getDepth() {
+		return depth;
+	}
+
+	/***
+	 * set depth to truncate history
+	 *
+	 * @param depth
+	 *            if depth == 0 then history will be cloned completely.
+	 *            otherwise the history will be truncated to the specified
+	 *            number of commits.
+	 * @throws IllegalArgumentException
+	 *             if depth is negative an <code>IllegalArgumentException</code>
+	 *             will be thrown
+	 * @since 4.6
+	 */
+	public void setDepth(int depth) {
+		if (depth < 0) {
+			throw new IllegalArgumentException(
+					JGitText.get().invalidDepth);
+		}
+		this.depth = depth;
 	}
 
 	/**
@@ -1217,7 +1259,15 @@ public abstract class Transport implements AutoCloseable {
 			// the local tracking branches without incurring additional
 			// object transfer overheads.
 			//
-			final Collection<RefSpec> tmp = new ArrayList<>(toFetch);
+			final Collection<RefSpec> tmp = new ArrayList<RefSpec>(toFetch);
+			// System.out
+			// .println("Transport.fetch.toFetch.size()='" + toFetch.size()
+			// + "'");
+			System.out
+						 .println("Transport.fetch.tmp.get(0)='" + ((ArrayList<RefSpec>)tmp).get(0)
+					 + "'");
+			// System.out
+			// .println("Transport.fetch.tmp.size()='" + tmp.size() + "'");
 			for (final RefSpec requested : toFetch) {
 				final String reqSrc = requested.getSource();
 				for (final RefSpec configured : fetch) {
@@ -1230,7 +1280,11 @@ public abstract class Transport implements AutoCloseable {
 				}
 			}
 			toFetch = tmp;
+			// System.out
+			// .println("Transport.fetch.tmp.size()='" + tmp.size() + "'");
+
 		}
+
 
 		final FetchResult result = new FetchResult();
 		new FetchProcess(this, toFetch).execute(monitor, result);

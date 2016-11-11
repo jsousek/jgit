@@ -1,0 +1,38 @@
+org.eclipse.jgit/src/org/eclipse/jgit/transport/FetchProcess.java - line 156
+
+--------------------------------------------------------------------------------
+/org.eclipse.jgit.test/tst/org/eclipse/jgit/api/CloneCommandTest.java
+testCloneRepositoryWithDepth1() -> line 752 -> command.call()
+->
+/org.eclipse.jgit/src/org/eclipse/jgit/api/CloneCommand.java
+call() -> line 138 -> fetch(...)
+->	
+/org.eclipse.jgit/src/org/eclipse/jgit/api/FetchCommand.java
+call() -> line 128 -> transport.fetch(...)
+->
+/org.eclipse.jgit/src/org/eclipse/jgit/transport/Transport.java
+fetch(...) -> line 1213 -> FetchProcess(...).execute(...) 
+->
+/org.eclipse.jgit/src/org/eclipse/jgit/transport/FetchProcess.java
+execute(...) -> line 122 -> executeImpl(...)
+->
+/org.eclipse.jgit/src/org/eclipse/jgit/transport/FetchProcess.java
+executeImpl(...) -> line 174 -> fetchObjects(...)
+->
+	/org.eclipse.jgit/src/org/eclipse/jgit/transport/FetchProcess.java
+	fetchObject(...) -> line 273 -> conn.fetch(...)
+	->
+	/org.eclipse.jgit/src/org/eclipse/jgit/transport/FetchConnection.java
+	fetch(...) - line 111
+	<==>
+	/org.eclipse.jgit/src/org/eclipse/jgit/transport/InternalFetchConnection.java
+	fetch(...) - <==>
+	<==>
+	/org.eclipse.jgit/src/org/eclipse/jgit/transport/BasePackFetchConnection.java
+	fetch(...) -> line 298 -> fetch(...)
+	->
+	/org.eclipse.jgit/src/org/eclipse/jgit/transport/BasePackFetchConnection.java
+	fetch(...) -> line 308 -> doFetch(...) - line 348
+	->
+	/org.eclipse.jgit/src/org/eclipse/jgit/transport/BasePackFetchConnection.java
+	doFetch(...) -> 
