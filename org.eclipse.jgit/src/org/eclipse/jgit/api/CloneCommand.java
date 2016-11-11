@@ -106,7 +106,7 @@ public class CloneCommand extends TransportCommand<CloneCommand, Git> {
 
 	private Collection<String> branchesToClone;
 
-	private int depth;
+	private int depth = 0;
 
 	/**
 	 * Create clone command with no repository set
@@ -173,6 +173,18 @@ public class CloneCommand extends TransportCommand<CloneCommand, Git> {
 		return command.call().getRepository();
 	}
 
+	/***
+	 * If depth == 0 it returns a wild-card, otherwise this function returns the
+	 * branch name as String
+	 *
+	 * @return branch name
+	 */
+	private String getBranchNameWithConsideredDepth() {
+		// final String result = (depth > 0 ? this.branch : "*"); //$NON-NLS-1$
+		final String result = "*"; //$NON-NLS-1$
+		return result;
+	}
+
 	private FetchResult fetch(Repository clonedRepo, URIish u)
 			throws URISyntaxException,
 			org.eclipse.jgit.api.errors.TransportException, IOException,
@@ -181,11 +193,14 @@ public class CloneCommand extends TransportCommand<CloneCommand, Git> {
 		RemoteConfig config = new RemoteConfig(clonedRepo.getConfig(), remote);
 		config.addURI(u);
 
+		final String branchName = getBranchNameWithConsideredDepth();
+
 		final String dst = (bare ? Constants.R_HEADS : Constants.R_REMOTES
-				+ config.getName() + "/") + "*"; //$NON-NLS-1$//$NON-NLS-2$
+				+ config.getName() + "/") + branchName; //$NON-NLS-1$
 		RefSpec refSpec = new RefSpec();
 		refSpec = refSpec.setForceUpdate(true);
-		refSpec = refSpec.setSourceDestination(Constants.R_HEADS + "*", dst); //$NON-NLS-1$
+		refSpec = refSpec.setSourceDestination(Constants.R_HEADS + branchName,
+				dst);
 
 		config.addFetchRefSpec(refSpec);
 		config.update(clonedRepo.getConfig());
@@ -196,7 +211,11 @@ public class CloneCommand extends TransportCommand<CloneCommand, Git> {
 		FetchCommand command = new FetchCommand(clonedRepo);
 		command.setRemote(remote);
 		command.setProgressMonitor(monitor);
-		command.setTagOpt(TagOpt.FETCH_TAGS);
+		if (this.depth > 0) {
+			command.setTagOpt(TagOpt.NO_TAGS);
+		} else {
+			command.setTagOpt(TagOpt.FETCH_TAGS);
+		}
 		configure(command);
 
 		List<RefSpec> specs = calculateRefSpecs(dst);
@@ -208,15 +227,19 @@ public class CloneCommand extends TransportCommand<CloneCommand, Git> {
 	private List<RefSpec> calculateRefSpecs(final String dst) {
 		RefSpec wcrs = new RefSpec();
 		wcrs = wcrs.setForceUpdate(true);
-		wcrs = wcrs.setSourceDestination(Constants.R_HEADS + "*", dst); //$NON-NLS-1$
+		final String branchName = getBranchNameWithConsideredDepth();
+		wcrs = wcrs.setSourceDestination(Constants.R_HEADS + branchName, dst);
 		List<RefSpec> specs = new ArrayList<RefSpec>();
 		if (cloneAllBranches)
 			specs.add(wcrs);
 		else if (branchesToClone != null
 				&& branchesToClone.size() > 0) {
-			for (final String selectedRef : branchesToClone)
+			for (final String selectedRef : branchesToClone) {
+				// System.out.println(
+				// "\t" + "Branch to clone='" + selectedRef + "'");
 				if (wcrs.matchSource(selectedRef))
 					specs.add(wcrs.expandFromSource(selectedRef));
+			}
 		}
 		return specs;
 	}
@@ -560,6 +583,14 @@ public class CloneCommand extends TransportCommand<CloneCommand, Git> {
 	 * @since 4.6
 	 */
 	public CloneCommand setDepth(int depth) {
+		if (depth < 0) {
+			throw new IllegalArgumentException(
+					MessageFormat.format(JGitText.get().invalidDepth, remote));
+		}
+		else if (depth > 0) {
+			this.setCloneAllBranches(false);
+			this.setCloneSubmodules(false);
+		}
 		this.depth = depth;
 		return this;
 	}

@@ -689,6 +689,7 @@ public class CloneCommandTest extends RepositoryTestCase {
 		// create more commits
 		this.setUp2();
 		// continue testing
+		System.out.println("testCloneRepositoryWithDepth0 - begin");
 		final String fileName1 = "Test.txt";
 		final String fileName2 = "HelloWorld.txt";
 		final String fileName3 = "file.txt";
@@ -702,17 +703,26 @@ public class CloneCommandTest extends RepositoryTestCase {
 		addRepoToClose(git2.getRepository());
 		assertNotNull(git2);
 		assertEquals(git2.getRepository().getFullBranch(), "refs/heads/master");
+		System.out.println("testCloneRepositoryWithDepth0 - end");
+		final Ref masterRef = git2.getRepository().findRef("refs/heads/master");
+		assertNotNull(masterRef);
+		final Ref testRef = git2.getRepository()
+				.findRef("refs/remotes/origin/test");
+		assertNotNull(testRef);
 
 		List<RevCommit> commits = getAsList(git.log().call());
 		assertEquals(3, commits.size());
 		RevCommit commit0 = commits.get(0);
 		assertNotNull(commit0);
+		System.out.println("	commit0='" + commit0.name() + "'");
 		assertEquals("Final commit", commit0.getShortMessage());
 		RevCommit commit1 = commits.get(1);
 		assertNotNull(commit1);
+		System.out.println("	commit1='" + commit1.name() + "'");
 		assertEquals("Third commit", commit1.getShortMessage());
 		RevCommit commit2 = commits.get(2);
 		assertNotNull(commit2);
+		System.out.println("	commit2='" + commit2.name() + "'");
 		assertEquals("Initial commit", commit2.getShortMessage());
 
 		assertTrue(new File(git2.getRepository().getWorkTree(),
@@ -729,6 +739,7 @@ public class CloneCommandTest extends RepositoryTestCase {
 		// create more commits
 		this.setUp2();
 		// continue testing
+		System.out.println("testCloneRepositoryWithDepth1 - begin");
 		final String fileName1 = "Test.txt";
 		final String fileName2 = "HelloWorld.txt";
 		final String fileName3 = "file.txt";
@@ -742,6 +753,7 @@ public class CloneCommandTest extends RepositoryTestCase {
 		addRepoToClose(git2.getRepository());
 		assertNotNull(git2);
 		assertEquals(git2.getRepository().getFullBranch(), "refs/heads/master");
+		System.out.println("testCloneRepositoryWithDepth1 - end");
 
 		List<RevCommit> commits = getAsList(git.log().call());
 		assertEquals(1, commits.size());
@@ -755,6 +767,12 @@ public class CloneCommandTest extends RepositoryTestCase {
 				File.separatorChar + fileName2).exists());
 		assertTrue(new File(git2.getRepository().getWorkTree(),
 				File.separatorChar + fileName3).exists());
+
+		final Ref masterRef = git2.getRepository().findRef("refs/heads/master");
+		assertNotNull(masterRef);
+		final Ref testRef = git2.getRepository()
+				.findRef("refs/remotes/origin/test");
+		assertNull(testRef);
 	}
 
 	@Test
@@ -763,6 +781,7 @@ public class CloneCommandTest extends RepositoryTestCase {
 		// create more commits
 		this.setUp2();
 		// continue testing
+		System.out.println("testCloneRepositoryWithDepth2 - begin");
 		final String fileName1 = "Test.txt";
 		final String fileName2 = "HelloWorld.txt";
 		final String fileName3 = "file.txt";
@@ -776,6 +795,7 @@ public class CloneCommandTest extends RepositoryTestCase {
 		addRepoToClose(git2.getRepository());
 		assertNotNull(git2);
 		assertEquals(git2.getRepository().getFullBranch(), "refs/heads/master");
+		System.out.println("testCloneRepositoryWithDepth2 - end");
 
 		List<RevCommit> commits = getAsList(git.log().call());
 		assertEquals(2, commits.size());
@@ -792,6 +812,19 @@ public class CloneCommandTest extends RepositoryTestCase {
 				File.separatorChar + fileName2).exists());
 		assertTrue(new File(git2.getRepository().getWorkTree(),
 				File.separatorChar + fileName3).exists());
+
+		final Ref masterRef = git2.getRepository().findRef("refs/heads/master");
+		assertNotNull(masterRef);
+		final Ref testRef = git2.getRepository()
+				.findRef("refs/remotes/origin/test");
+		assertNull(testRef);
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testCloneRepositoryWithNegativeDepth()
+			throws JGitInternalException, IllegalArgumentException {
+		CloneCommand command = Git.cloneRepository();
+		command.setDepth(-3);
 	}
 
 }
