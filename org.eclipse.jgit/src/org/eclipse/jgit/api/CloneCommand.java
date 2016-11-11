@@ -106,6 +106,8 @@ public class CloneCommand extends TransportCommand<CloneCommand, Git> {
 
 	private Collection<String> branchesToClone;
 
+	private int depth;
+
 	/**
 	 * Create clone command with no repository set
 	 */
@@ -534,5 +536,28 @@ public class CloneCommand extends TransportCommand<CloneCommand, Git> {
 							gitDir, directory));
 			}
 		}
+	}
+
+	/***
+	 * if depth > 0 then the history will be truncated to the specified number
+	 * of commits
+	 *
+	 * @return depth
+	 */
+	public int getDepth() {
+		return depth;
+	}
+
+	/***
+	 * set depth to truncate history
+	 *
+	 * @param depth
+	 *            if depth == 0 then history will be cloned completely.
+	 *            otherwise the history will be truncated to the specified
+	 *            number of commits
+	 */
+	public void setDepth(int depth) {
+		this.depth = depth;
+
 	}
 }
