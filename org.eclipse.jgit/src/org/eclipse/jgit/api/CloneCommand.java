@@ -543,6 +543,7 @@ public class CloneCommand extends TransportCommand<CloneCommand, Git> {
 	 * of commits
 	 *
 	 * @return depth
+	 * @since 4.6
 	 */
 	public int getDepth() {
 		return depth;
@@ -555,9 +556,11 @@ public class CloneCommand extends TransportCommand<CloneCommand, Git> {
 	 *            if depth == 0 then history will be cloned completely.
 	 *            otherwise the history will be truncated to the specified
 	 *            number of commits
+	 * @return {@code this}
+	 * @since 4.6
 	 */
-	public void setDepth(int depth) {
+	public CloneCommand setDepth(int depth) {
 		this.depth = depth;
-
+		return this;
 	}
 }
