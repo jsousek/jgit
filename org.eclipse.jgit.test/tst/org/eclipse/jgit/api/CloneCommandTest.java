@@ -760,6 +760,7 @@ public class CloneCommandTest extends RepositoryTestCase {
 		RevCommit commit0 = commits.get(0);
 		assertNotNull(commit0);
 		assertEquals("Final commit", commit0.getShortMessage());
+		System.out.println("	commit0='" + commit0.name() + "'");
 
 		assertTrue(new File(git2.getRepository().getWorkTree(),
 				File.separatorChar + fileName1).exists());
