@@ -146,6 +146,8 @@ class FetchProcess {
 					+ toFetch.size() + "'");
 			System.out.println("FetchProcess.fetchObjects.con.getRefs.size()='"
 					+ conn.getRefs().size() + "'");
+			System.out.println("FetchProcess.fetchObjects.con.getRefs.get(0)='"
+					+ toFetch.iterator().next() + "'");
 			for (final RefSpec spec : toFetch) {
 				if (spec.getSource() == null)
 					throw new TransportException(MessageFormat.format(
