@@ -694,21 +694,26 @@ public class CloneCommandTest extends RepositoryTestCase {
 		final String fileName2 = "HelloWorld.txt";
 		final String fileName3 = "file.txt";
 
-		File directory = createTempDirectory("testCloneRepository");
+		File directory = createTempDirectory("testCloneRepositoryWithDepth0");
 		CloneCommand command = Git.cloneRepository();
 		command.setDepth(0);
+		command.setBranch("refs/heads/master");
+		command.setBranchesToClone(
+				Collections.singletonList("refs/heads/master"));
 		command.setDirectory(directory);
 		command.setURI(fileUri());
 		Git git2 = command.call();
 		addRepoToClose(git2.getRepository());
 		assertNotNull(git2);
 		assertEquals(git2.getRepository().getFullBranch(), "refs/heads/master");
+		assertEquals("refs/remotes/origin/master", allRefNames(
+				git2.branchList().setListMode(ListMode.REMOTE).call()));
 		System.out.println("testCloneRepositoryWithDepth0 - end");
 		final Ref masterRef = git2.getRepository().findRef("refs/heads/master");
 		assertNotNull(masterRef);
-		final Ref testRef = git2.getRepository()
-				.findRef("refs/remotes/origin/test");
-		assertNotNull(testRef);
+		// final Ref testRef = git2.getRepository()
+		// .findRef("refs/remotes/origin/test");
+		// assertNotNull(testRef);
 
 		List<RevCommit> commits = getAsList(git.log().call());
 		assertEquals(3, commits.size());
@@ -744,15 +749,20 @@ public class CloneCommandTest extends RepositoryTestCase {
 		final String fileName2 = "HelloWorld.txt";
 		final String fileName3 = "file.txt";
 
-		File directory = createTempDirectory("testCloneRepository");
+		File directory = createTempDirectory("testCloneRepositoryWithDepth1");
 		CloneCommand command = Git.cloneRepository();
 		command.setDepth(1);
+		command.setBranch("refs/heads/master");
+		command.setBranchesToClone(
+				Collections.singletonList("refs/heads/master"));
 		command.setDirectory(directory);
 		command.setURI(fileUri());
 		Git git2 = command.call();
 		addRepoToClose(git2.getRepository());
 		assertNotNull(git2);
 		assertEquals(git2.getRepository().getFullBranch(), "refs/heads/master");
+		assertEquals("refs/remotes/origin/master", allRefNames(
+				git2.branchList().setListMode(ListMode.REMOTE).call()));
 		System.out.println("testCloneRepositoryWithDepth1 - end");
 
 		List<RevCommit> commits = getAsList(git.log().call());
@@ -787,15 +797,20 @@ public class CloneCommandTest extends RepositoryTestCase {
 		final String fileName2 = "HelloWorld.txt";
 		final String fileName3 = "file.txt";
 
-		File directory = createTempDirectory("testCloneRepository");
+		File directory = createTempDirectory("testCloneRepositoryWithDepth2");
 		CloneCommand command = Git.cloneRepository();
 		command.setDepth(2);
+		command.setBranch("refs/heads/master");
+		command.setBranchesToClone(
+				Collections.singletonList("refs/heads/master"));
 		command.setDirectory(directory);
 		command.setURI(fileUri());
 		Git git2 = command.call();
 		addRepoToClose(git2.getRepository());
 		assertNotNull(git2);
 		assertEquals(git2.getRepository().getFullBranch(), "refs/heads/master");
+		assertEquals("refs/remotes/origin/master", allRefNames(
+				git2.branchList().setListMode(ListMode.REMOTE).call()));
 		System.out.println("testCloneRepositoryWithDepth2 - end");
 
 		List<RevCommit> commits = getAsList(git.log().call());

@@ -235,8 +235,8 @@ public class CloneCommand extends TransportCommand<CloneCommand, Git> {
 		else if (branchesToClone != null
 				&& branchesToClone.size() > 0) {
 			for (final String selectedRef : branchesToClone) {
-				// System.out.println(
-				// "\t" + "Branch to clone='" + selectedRef + "'");
+				System.out.println(
+						"\t" + "Branch to clone='" + selectedRef + "'");
 				if (wcrs.matchSource(selectedRef))
 					specs.add(wcrs.expandFromSource(selectedRef));
 			}

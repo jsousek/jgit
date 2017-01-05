@@ -726,6 +726,9 @@ public abstract class BasePackFetchConnection extends BasePackConnection
 
 	private void markRefsAdvertised() {
 		for (final Ref r : getRefs()) {
+			// System.out.println(
+			// "BasePackFetchConnection.markRefsAdvertised.r.getObjectId='"
+			// + r.getObjectId() + "'");
 			markAdvertised(r.getObjectId());
 			if (r.getPeeledObjectId() != null)
 				markAdvertised(r.getPeeledObjectId());
