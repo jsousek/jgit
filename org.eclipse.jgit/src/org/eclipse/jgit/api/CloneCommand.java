@@ -108,6 +108,8 @@ public class CloneCommand extends TransportCommand<CloneCommand, Git> {
 
 	private int depth = 0;
 
+	private TagOpt tagOption;
+
 	/**
 	 * Create clone command with no repository set
 	 */
@@ -211,11 +213,12 @@ public class CloneCommand extends TransportCommand<CloneCommand, Git> {
 		FetchCommand command = new FetchCommand(clonedRepo);
 		command.setRemote(remote);
 		command.setProgressMonitor(monitor);
-		if (this.depth > 0) {
-			command.setTagOpt(TagOpt.NO_TAGS);
-		} else {
-			command.setTagOpt(TagOpt.FETCH_TAGS);
-		}
+		// if (this.depth > 0) {
+		// command.setTagOpt(TagOpt.NO_TAGS);
+		// } else {
+		// command.setTagOpt(TagOpt.FETCH_TAGS);
+		// }
+		command.setTagOpt(this.tagOption);
 		configure(command);
 
 		List<RefSpec> specs = calculateRefSpecs(dst);
@@ -564,6 +567,33 @@ public class CloneCommand extends TransportCommand<CloneCommand, Git> {
 	}
 
 	/***
+	 * get {@code TagOption}
+	 *
+	 * @return {@code TagOption}
+	 * @since 4.6
+	 */
+	public TagOpt getTagOption() {
+		return tagOption;
+	}
+
+	/***
+	 * set {@code TagOption}
+	 *
+	 * @param tagOption
+	 * @throws IllegalArgumentException
+	 *             if tagOption is null an <code>IllegalArgumentException</code>
+	 *             will be thrown
+	 * @since 4.6
+	 */
+	public void setTagOption(TagOpt tagOption) {
+		if (tagOption == null) {
+			throw new IllegalArgumentException(MessageFormat
+					.format(JGitText.get().invalidTagOption, remote));
+		}
+		this.tagOption = tagOption;
+	}
+
+	/***
 	 * if depth > 0 then the history will be truncated to the specified number
 	 * of commits
 	 *
@@ -599,4 +629,5 @@ public class CloneCommand extends TransportCommand<CloneCommand, Git> {
 		this.depth = depth;
 		return this;
 	}
+
 }

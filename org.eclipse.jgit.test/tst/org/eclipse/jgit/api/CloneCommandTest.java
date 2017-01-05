@@ -78,6 +78,7 @@ import org.eclipse.jgit.submodule.SubmoduleStatusType;
 import org.eclipse.jgit.submodule.SubmoduleWalk;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.RemoteConfig;
+import org.eclipse.jgit.transport.TagOpt;
 import org.eclipse.jgit.util.SystemReader;
 import org.junit.Test;
 
@@ -700,6 +701,7 @@ public class CloneCommandTest extends RepositoryTestCase {
 		command.setBranch("refs/heads/master");
 		command.setBranchesToClone(
 				Collections.singletonList("refs/heads/master"));
+		command.setTagOption(TagOpt.NO_TAGS);
 		command.setDirectory(directory);
 		command.setURI(fileUri());
 		Git git2 = command.call();
@@ -755,6 +757,7 @@ public class CloneCommandTest extends RepositoryTestCase {
 		command.setBranch("refs/heads/master");
 		command.setBranchesToClone(
 				Collections.singletonList("refs/heads/master"));
+		command.setTagOption(TagOpt.NO_TAGS);
 		command.setDirectory(directory);
 		command.setURI(fileUri());
 		Git git2 = command.call();
@@ -803,6 +806,7 @@ public class CloneCommandTest extends RepositoryTestCase {
 		command.setBranch("refs/heads/master");
 		command.setBranchesToClone(
 				Collections.singletonList("refs/heads/master"));
+		command.setTagOption(TagOpt.NO_TAGS);
 		command.setDirectory(directory);
 		command.setURI(fileUri());
 		Git git2 = command.call();

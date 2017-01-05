@@ -464,7 +464,11 @@ public abstract class BasePackFetchConnection extends BasePackConnection
 		final PacketLineOut p = statelessRPC ? pckState : pckOut;
 		boolean first = true;
 		for (final Ref r : want) {
+			System.out
+					.println("BasePackFetchConnection.sendWants.r='" + r + "'");
 			ObjectId objectId = r.getObjectId();
+			System.out.println("BasePackFetchConnection.sendWants.objectId='"
+					+ objectId + "'");
 			if (objectId == null) {
 				continue;
 			}
