@@ -218,6 +218,7 @@ class FetchProcess {
 			if (transport.isRemoveDeletedRefs())
 				deleteStaleTrackingRefs(result, batch);
 			for (TrackingRefUpdate u : localUpdates) {
+				System.out.println("FetchProcess.executeImpl.u='" + u + "'");
 				result.add(u);
 				batch.addCommand(u.asReceiveCommand());
 			}
@@ -344,12 +345,23 @@ class FetchProcess {
 		File meta = transport.local.getDirectory();
 		if (meta == null)
 			return;
+		System.out.println("FetchProcess.updateFETCH_HEAD");
+		System.out.println(
+				"FetchProcess.updateFETCH_HEAD.fetchHeadUpdates.size()='"
+						+ fetchHeadUpdates.size() + "'");
+		System.out.println(
+				"FetchProcess.updateFETCH_HEAD.fetchHeadUpdates.get(0)='"
+						+ fetchHeadUpdates.get(0) + "'");
+
 		final LockFile lock = new LockFile(new File(meta, "FETCH_HEAD")); //$NON-NLS-1$
 		try {
 			if (lock.lock()) {
 				final Writer w = new OutputStreamWriter(lock.getOutputStream());
 				try {
 					for (final FetchHeadRecord h : fetchHeadUpdates) {
+						System.out.println(
+								"FetchProcess.updateFETCH_HEAD.h.sourceName='"
+										+ h.sourceName + "'");
 						h.write(w);
 						result.add(h);
 					}

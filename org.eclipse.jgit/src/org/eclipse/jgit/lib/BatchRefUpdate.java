@@ -324,7 +324,7 @@ public class BatchRefUpdate {
 	 * Gets the list of option strings associated with this update.
 	 *
 	 * @return pushOptions
-	 * @since 4.5
+	 * @since 4.6
 	 */
 	public List<String> getPushOptions() {
 		return pushOptions;
@@ -377,7 +377,7 @@ public class BatchRefUpdate {
 	 *             the database is unable to accept the update. Individual
 	 *             command status must be tested to determine if there is a
 	 *             partial failure, or a total failure.
-	 * @since 4.5
+	 * @since 4.6
 	 */
 	public void execute(RevWalk walk, ProgressMonitor monitor,
 			List<String> options) throws IOException {

@@ -408,8 +408,12 @@ public abstract class BasePackFetchConnection extends BasePackConnection
 	private void markReachable(final Set<ObjectId> have, final int maxTime)
 			throws IOException {
 		Map<String, Ref> refs = local.getRefDatabase().getRefs(ALL);
+		System.out.println("BasePackFetchConnection.markReachable.refs.size()='"
+				+ refs.size() + "'");
 		for (final Ref r : refs.values()) {
 			ObjectId id = r.getPeeledObjectId();
+			System.out.println(
+					"BasePackFetchConnection.markReachable.#1.id='" + id + "'");
 			if (id == null)
 				id = r.getObjectId();
 			if (id == null)
@@ -417,13 +421,21 @@ public abstract class BasePackFetchConnection extends BasePackConnection
 			parseReachable(id);
 		}
 
-		for (ObjectId id : local.getAdditionalHaves())
+		for (ObjectId id : local.getAdditionalHaves()) {
+			System.out.println(
+					"BasePackFetchConnection.markReachable.#2.id='" + id + "'");
 			parseReachable(id);
+		}
 
-		for (ObjectId id : have)
+		for (ObjectId id : have) {
+			System.out.println(
+					"BasePackFetchConnection.markReachable.#2.id='" + id + "'");
 			parseReachable(id);
+		}
 
 		if (maxTime > 0) {
+			System.out
+					.println("BasePackFetchConnection.markReachable.maxTime>0");
 			// Mark reachable commits until we reach maxTime. These may
 			// wind up later matching up against things we want and we
 			// can avoid asking for something we already happen to have.
@@ -492,6 +504,8 @@ public abstract class BasePackFetchConnection extends BasePackConnection
 				first = false;
 			}
 			line.append('\n');
+			System.out.println("BasePackFetchConnection.sendWants.line='"
+					+ line.toString() + "'");
 			p.writeString(line.toString());
 		}
 		if (first)
@@ -556,6 +570,8 @@ public abstract class BasePackFetchConnection extends BasePackConnection
 		negotiateBegin();
 		SEND_HAVES: for (;;) {
 			final RevCommit c = walk.next();
+			System.out
+					.println("BasePackFetchConnection.negotiate.c='" + c + "'");
 			if (c == null)
 				break SEND_HAVES;
 
@@ -730,9 +746,9 @@ public abstract class BasePackFetchConnection extends BasePackConnection
 
 	private void markRefsAdvertised() {
 		for (final Ref r : getRefs()) {
-			// System.out.println(
-			// "BasePackFetchConnection.markRefsAdvertised.r.getObjectId='"
-			// + r.getObjectId() + "'");
+			System.out.println(
+					"BasePackFetchConnection.markRefsAdvertised.r.getObjectId='"
+							+ r.getObjectId() + "'");
 			markAdvertised(r.getObjectId());
 			if (r.getPeeledObjectId() != null)
 				markAdvertised(r.getPeeledObjectId());

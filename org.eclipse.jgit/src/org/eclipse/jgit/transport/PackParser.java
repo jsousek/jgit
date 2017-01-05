@@ -533,6 +533,8 @@ public abstract class PackParser {
 
 			receiving.beginTask(JGitText.get().receivingObjects,
 					(int) objectCount);
+			System.out.println(
+					"PackParser.parse.objectCount='" + objectCount + "'");
 			try {
 				for (int done = 0; done < objectCount; done++) {
 					indexOneObject();
@@ -549,6 +551,8 @@ public abstract class PackParser {
 			if (!deferredCheckBlobs.isEmpty())
 				doDeferredCheckBlobs();
 			if (deltaCount > 0) {
+				System.out.println(
+						"PackParser.parse.deltaCount='" + deltaCount + "'");
 				if (resolving instanceof BatchingProgressMonitor) {
 					((BatchingProgressMonitor) resolving).setDelayStart(
 							1000,
