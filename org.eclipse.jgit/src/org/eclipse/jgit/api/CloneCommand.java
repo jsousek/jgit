@@ -241,6 +241,8 @@ public class CloneCommand extends TransportCommand<CloneCommand, Git> {
 					specs.add(wcrs.expandFromSource(selectedRef));
 			}
 		}
+		// System.out.println(
+		// "CloneCommand.calculateRefSpecs.specs='" + specs.size() + "'");
 		return specs;
 	}
 

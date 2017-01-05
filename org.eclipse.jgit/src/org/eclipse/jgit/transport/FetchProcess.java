@@ -138,11 +138,20 @@ class FetchProcess {
 			result.setAdvertisedRefs(transport.getURI(), conn.getRefsMap());
 			result.peerUserAgent = conn.getPeerUserAgent();
 			final Set<Ref> matched = new HashSet<Ref>();
+			System.out.println("FetchProcess.fetchObjects.askFor.size()='"
+					+ askFor.size() + "'");
+			System.out.println("FetchProcess.fetchObjects.have.size()='"
+					+ have.size() + "'");
+			System.out.println("FetchProcess.fetchObjects.toFetch.size()='"
+					+ toFetch.size() + "'");
+			System.out.println("FetchProcess.fetchObjects.con.getRefs.size()='"
+					+ conn.getRefs().size() + "'");
 			for (final RefSpec spec : toFetch) {
 				if (spec.getSource() == null)
 					throw new TransportException(MessageFormat.format(
 							JGitText.get().sourceRefNotSpecifiedForRefspec, spec));
-
+				System.out.println("FetchProcess.executeImp.spec.isWildcard='"
+						+ spec.isWildcard() + "'");
 				if (spec.isWildcard())
 					expandWildcard(spec, matched);
 				else
@@ -158,6 +167,7 @@ class FetchProcess {
 
 			final boolean includedTags;
 			if (!askFor.isEmpty() && !askForIsComplete()) {
+				System.out.println("FetchProcess.executeImpl.inIfAskFor");
 				fetchObjects(monitor);
 				includedTags = conn.didFetchIncludeTags();
 
@@ -242,6 +252,10 @@ class FetchProcess {
 			throws TransportException {
 		try {
 			conn.setPackLockMessage("jgit fetch " + transport.uri); //$NON-NLS-1$
+			System.out.println("FetchProcess.fetchObjects.askFor.size()='"
+					+ askFor.size() + "'");
+			System.out.println("FetchProcess.fetchObjects.have.size()='"
+					+ have.size() + "'");
 			conn.fetch(monitor, askFor.values(), have);
 		} finally {
 			packLocks.addAll(conn.getPackLocks());
@@ -290,6 +304,8 @@ class FetchProcess {
 				removeTrackingRefUpdate(want.getObjectId());
 			}
 		}
+		System.out.println("FetchProcess.reopenConnection.askFor.size()='"
+				+ askFor.size() + "'");
 	}
 
 	private void removeTrackingRefUpdate(final ObjectId want) {

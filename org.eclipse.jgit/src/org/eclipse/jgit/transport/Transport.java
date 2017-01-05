@@ -1183,6 +1183,14 @@ public abstract class Transport implements AutoCloseable {
 			// object transfer overheads.
 			//
 			final Collection<RefSpec> tmp = new ArrayList<RefSpec>(toFetch);
+			// System.out
+			// .println("Transport.fetch.toFetch.size()='" + toFetch.size()
+			// + "'");
+			System.out
+						 .println("Transport.fetch.tmp.get(0)='" + ((ArrayList<RefSpec>)tmp).get(0)
+					 + "'");
+			// System.out
+			// .println("Transport.fetch.tmp.size()='" + tmp.size() + "'");
 			for (final RefSpec requested : toFetch) {
 				final String reqSrc = requested.getSource();
 				for (final RefSpec configured : fetch) {
@@ -1195,7 +1203,11 @@ public abstract class Transport implements AutoCloseable {
 				}
 			}
 			toFetch = tmp;
+			// System.out
+			// .println("Transport.fetch.tmp.size()='" + tmp.size() + "'");
+
 		}
+
 
 		final FetchResult result = new FetchResult();
 		new FetchProcess(this, toFetch).execute(monitor, result);
