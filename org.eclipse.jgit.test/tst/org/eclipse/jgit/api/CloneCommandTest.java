@@ -78,6 +78,7 @@ import org.eclipse.jgit.submodule.SubmoduleStatusType;
 import org.eclipse.jgit.submodule.SubmoduleWalk;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.RemoteConfig;
+import org.eclipse.jgit.transport.Transport;
 import org.eclipse.jgit.util.SystemReader;
 import org.junit.Test;
 
@@ -684,19 +685,21 @@ public class CloneCommandTest extends RepositoryTestCase {
 	}
 
 	@Test
-	public void testCloneRepositoryWithDepth0() throws IOException,
+	public void testCloneRepositoryWithDepthInfinite()
+			throws IOException,
 			JGitInternalException, GitAPIException {
 		// create more commits
 		this.setUp2();
 		// continue testing
-		System.out.println("testCloneRepositoryWithDepth0 - begin");
+		System.out.println("testCloneRepositoryWithDepthInfinite - begin");
 		final String fileName1 = "Test.txt";
 		final String fileName2 = "HelloWorld.txt";
 		final String fileName3 = "file.txt";
 
-		File directory = createTempDirectory("testCloneRepositoryWithDepth0");
+		File directory = createTempDirectory(
+				"testCloneRepositoryWithDepthInfinite");
 		CloneCommand command = Git.cloneRepository();
-		command.setDepth(0);
+		command.setDepth(Transport.DEPTH_INFINITE);
 		command.setBranch("refs/heads/master");
 		command.setBranchesToClone(
 				Collections.singletonList("refs/heads/master"));

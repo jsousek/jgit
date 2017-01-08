@@ -163,8 +163,11 @@ public class PacketLineOut {
 		formatLength(0);
 		out.write(lenbuffer, 0, 4);
 		log.debug("git> 0000"); //$NON-NLS-1$
-		if (flushOnEnd)
+		if (flushOnEnd) {
+			System.out.println(Thread.currentThread().getName() + ":\t"
+					+ "PacketLineOut.end.flushOnEnd");
 			flush();
+		}
 	}
 
 	/**

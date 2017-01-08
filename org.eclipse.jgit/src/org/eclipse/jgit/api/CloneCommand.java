@@ -74,6 +74,7 @@ import org.eclipse.jgit.transport.FetchResult;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.TagOpt;
+import org.eclipse.jgit.transport.Transport;
 import org.eclipse.jgit.transport.URIish;
 
 /**
@@ -106,7 +107,7 @@ public class CloneCommand extends TransportCommand<CloneCommand, Git> {
 
 	private Collection<String> branchesToClone;
 
-	private int depth = 0;
+	private int depth = Transport.DEPTH_INFINITE;
 
 	/**
 	 * Create clone command with no repository set
@@ -211,9 +212,11 @@ public class CloneCommand extends TransportCommand<CloneCommand, Git> {
 		FetchCommand command = new FetchCommand(clonedRepo);
 		command.setRemote(remote);
 		command.setProgressMonitor(monitor);
-		 if (this.depth > 0) {
-		 command.setTagOpt(TagOpt.NO_TAGS);
-		} // else {
+		if (this.depth != Transport.DEPTH_INFINITE) {
+			command.setTagOpt(TagOpt.NO_TAGS);
+		}
+		command.setDepth(this.depth);
+		// } else {
 		// command.setTagOpt(TagOpt.FETCH_TAGS);
 		// }
 		// command.setTagOpt(this.tagOption);
@@ -565,8 +568,10 @@ public class CloneCommand extends TransportCommand<CloneCommand, Git> {
 	}
 
 	/***
-	 * if depth > 0 then the history will be truncated to the specified number
-	 * of commits
+	 * if depth != {@code org.eclipse.jgit.transport.Transport.DEPTH_INFINITE}
+	 * then the history will be truncated to the specified number of commits. if
+	 * depth == {@code org.eclipse.jgit.transport.Transport.DEPTH_INFINITE}.
+	 * then the history will be cloned completely.
 	 *
 	 * @return depth
 	 * @since 4.6
@@ -579,9 +584,12 @@ public class CloneCommand extends TransportCommand<CloneCommand, Git> {
 	 * set depth to truncate history
 	 *
 	 * @param depth
-	 *            if depth == 0 then history will be cloned completely.
-	 *            otherwise the history will be truncated to the specified
-	 *            number of commits.
+	 *            0 < depth <=
+	 *            {@code org.eclipse.jgit.transport.Transport.DEPTH_INFINITE}.
+	 *            If depth ==
+	 *            {@code org.eclipse.jgit.transport.Transport.DEPTH_INFINITE}
+	 *            then history will be cloned completely. otherwise the history
+	 *            will be truncated to the specified number of commits.
 	 * @return {@code this}
 	 * @throws IllegalArgumentException
 	 *             if depth is negative an <code>IllegalArgumentException</code>
@@ -589,11 +597,12 @@ public class CloneCommand extends TransportCommand<CloneCommand, Git> {
 	 * @since 4.6
 	 */
 	public CloneCommand setDepth(int depth) {
-		if (depth < 0) {
+		if (depth <= 0) {
 			throw new IllegalArgumentException(
-					MessageFormat.format(JGitText.get().invalidDepth, remote));
+					MessageFormat.format(JGitText.get().invalidDepth,
+							Integer.valueOf(depth)));
 		}
-		else if (depth > 0) {
+		else if (depth > 0 && depth < Transport.DEPTH_INFINITE) {
 			this.setCloneAllBranches(false);
 			this.setCloneSubmodules(false);
 		}
