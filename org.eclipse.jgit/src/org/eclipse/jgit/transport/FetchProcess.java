@@ -162,6 +162,8 @@ class FetchProcess {
 
 			Collection<Ref> additionalTags = Collections.<Ref> emptyList();
 			final TagOpt tagopt = transport.getTagOpt();
+			System.out
+					.println("FetchProcess.executeImp.tagopt='" + tagopt + "'");
 			if (tagopt == TagOpt.AUTO_FOLLOW)
 				additionalTags = expandAutoFollowTags();
 			else if (tagopt == TagOpt.FETCH_TAGS)

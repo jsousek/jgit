@@ -78,7 +78,6 @@ import org.eclipse.jgit.submodule.SubmoduleStatusType;
 import org.eclipse.jgit.submodule.SubmoduleWalk;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.RemoteConfig;
-import org.eclipse.jgit.transport.TagOpt;
 import org.eclipse.jgit.util.SystemReader;
 import org.junit.Test;
 
@@ -701,7 +700,6 @@ public class CloneCommandTest extends RepositoryTestCase {
 		command.setBranch("refs/heads/master");
 		command.setBranchesToClone(
 				Collections.singletonList("refs/heads/master"));
-		command.setTagOption(TagOpt.NO_TAGS);
 		command.setDirectory(directory);
 		command.setURI(fileUri());
 		Git git2 = command.call();
@@ -713,9 +711,10 @@ public class CloneCommandTest extends RepositoryTestCase {
 		System.out.println("testCloneRepositoryWithDepth0 - end");
 		final Ref masterRef = git2.getRepository().findRef("refs/heads/master");
 		assertNotNull(masterRef);
-		// final Ref testRef = git2.getRepository()
-		// .findRef("refs/remotes/origin/test");
-		// assertNotNull(testRef);
+		// tags are loaded
+		assertEquals(2, db.getTags().size());
+		assertNotNull(db.resolve("tag-initial"));
+		assertNotNull(db.resolve("tag-for-blob"));
 
 		List<RevCommit> commits = getAsList(git.log().call());
 		assertEquals(3, commits.size());
@@ -757,7 +756,6 @@ public class CloneCommandTest extends RepositoryTestCase {
 		command.setBranch("refs/heads/master");
 		command.setBranchesToClone(
 				Collections.singletonList("refs/heads/master"));
-		command.setTagOption(TagOpt.NO_TAGS);
 		command.setDirectory(directory);
 		command.setURI(fileUri());
 		Git git2 = command.call();
@@ -767,6 +765,10 @@ public class CloneCommandTest extends RepositoryTestCase {
 		assertEquals("refs/remotes/origin/master", allRefNames(
 				git2.branchList().setListMode(ListMode.REMOTE).call()));
 		System.out.println("testCloneRepositoryWithDepth1 - end");
+		// no tags
+		assertEquals(0, git2.getRepository().getTags().size());
+		assertNull(git2.getRepository().resolve("tag-initial"));
+		assertNull(git2.getRepository().resolve("tag-for-blob"));
 
 		List<RevCommit> commits = getAsList(git.log().call());
 		assertEquals(1, commits.size());
@@ -806,7 +808,6 @@ public class CloneCommandTest extends RepositoryTestCase {
 		command.setBranch("refs/heads/master");
 		command.setBranchesToClone(
 				Collections.singletonList("refs/heads/master"));
-		command.setTagOption(TagOpt.NO_TAGS);
 		command.setDirectory(directory);
 		command.setURI(fileUri());
 		Git git2 = command.call();
@@ -816,6 +817,10 @@ public class CloneCommandTest extends RepositoryTestCase {
 		assertEquals("refs/remotes/origin/master", allRefNames(
 				git2.branchList().setListMode(ListMode.REMOTE).call()));
 		System.out.println("testCloneRepositoryWithDepth2 - end");
+		// no tags
+		assertEquals(0, git2.getRepository().getTags().size());
+		assertNull(git2.getRepository().resolve("tag-initial"));
+		assertNull(git2.getRepository().resolve("tag-for-blob"));
 
 		List<RevCommit> commits = getAsList(git.log().call());
 		assertEquals(2, commits.size());
