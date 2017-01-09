@@ -646,6 +646,8 @@ public abstract class BasePackFetchConnection extends BasePackConnection
 			}
 
 			READ_RESULT: for (;;) {
+				System.out.println(Thread.currentThread().getName() + ":\t"
+						+ "BasePackFetchConnection.negotiate.SEND_HAVES.READ_RESULT'");
 				final AckNackResult anr = pckIn.readACK(ackId);
 				switch (anr) {
 				case NAK:
@@ -718,6 +720,8 @@ public abstract class BasePackFetchConnection extends BasePackConnection
 			//
 			pckOut.writeString("done\n"); //$NON-NLS-1$
 			pckOut.flush();
+			System.out.println(Thread.currentThread().getName() + ":\t"
+					+ "BasePackFetchConnection.negotiate write done!");
 		}
 
 		if (!receivedAck) {
@@ -732,6 +736,8 @@ public abstract class BasePackFetchConnection extends BasePackConnection
 				"BasePackFetchConnection.negotiate.readResult - begin");
 
 		READ_RESULT: while (resultsPending > 0 || multiAck != MultiAck.OFF) {
+			System.out.println(Thread.currentThread().getName() + ":\t"
+					+ "BasePackFetchConnection.negotiate.READ_RESULT");
 			final AckNackResult anr = pckIn.readACK(ackId);
 			resultsPending--;
 			switch (anr) {
