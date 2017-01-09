@@ -127,11 +127,11 @@ public class PacketLineIn {
 		}
 		if (line.startsWith("ERR ")) //$NON-NLS-1$
 			throw new PackProtocolException(line.substring(4));
-		if (line.startsWith("shallow ")) { //$NON-NLS-1$
-			System.out.println(Thread.currentThread().getName() + ":\t"
-					+ "PacketLineIn.readACK.shallow line='" + line + "'");
-			return readACK(returnedId);
-		}
+		// if (line.startsWith("shallow ")) { //$NON-NLS-1$
+		// System.out.println(Thread.currentThread().getName() + ":\t"
+		// + "PacketLineIn.readACK.shallow line='" + line + "'");
+		// return readACK(returnedId);
+		// }
 		throw new PackProtocolException(MessageFormat.format(JGitText.get().expectedACKNAKGot, line));
 	}
 
