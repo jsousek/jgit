@@ -185,10 +185,12 @@ public class AppServer {
 			putUser(username, new Password(password), new String[] { role });
 		}
 
+		@Override
 		protected String[] loadRoleInfo(KnownUser user) {
 			return null;
 		}
 
+		@Override
 		protected KnownUser loadUserInfo(String usrname) {
 			return null;
 		}
@@ -269,7 +271,7 @@ public class AppServer {
 
 	/** @return all requests since the server was started. */
 	public List<AccessEvent> getRequests() {
-		return new ArrayList<AccessEvent>(log.getEvents());
+		return new ArrayList<>(log.getEvents());
 	}
 
 	/**
@@ -289,7 +291,7 @@ public class AppServer {
 	 * @return all requests which match the given path.
 	 */
 	public List<AccessEvent> getRequests(String path) {
-		ArrayList<AccessEvent> r = new ArrayList<AccessEvent>();
+		ArrayList<AccessEvent> r = new ArrayList<>();
 		for (AccessEvent event : log.getEvents()) {
 			if (event.getPath().equals(path)) {
 				r.add(event);
