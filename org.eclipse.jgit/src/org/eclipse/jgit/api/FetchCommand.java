@@ -48,6 +48,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.jgit.annotations.Nullable;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidConfigurationException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
@@ -99,6 +100,24 @@ public class FetchCommand extends TransportCommand<FetchCommand, FetchResult> {
 
 	private int depth = Transport.DEPTH_INFINITE;
 	private FetchRecurseSubmodulesMode submoduleRecurseMode = null;
+
+	private Callback callback;
+
+	/**
+	 * Callback for status of fetch operation.
+	 *
+	 * @since 4.8
+	 *
+	 */
+	public interface Callback {
+		/**
+		 * Notify fetching a submodule.
+		 *
+		 * @param name
+		 *            the submodule name.
+		 */
+		void fetchingSubmodule(String name);
+	}
 
 	/**
 	 * @param repo
@@ -174,6 +193,9 @@ public class FetchCommand extends TransportCommand<FetchCommand, FetchResult> {
 							.setThin(thin).setRefSpecs(refSpecs)
 							.setDryRun(dryRun)
 							.setRecurseSubmodules(recurseMode);
+					if (callback != null) {
+						callback.fetchingSubmodule(walk.getPath());
+					}
 					results.addSubmodule(walk.getPath(), f.call());
 				}
 			}
@@ -239,11 +261,19 @@ public class FetchCommand extends TransportCommand<FetchCommand, FetchResult> {
 	 * Set the mode to be used for recursing into submodules.
 	 *
 	 * @param recurse
+	 *            corresponds to the
+	 *            --recurse-submodules/--no-recurse-submodules options. If
+	 *            {@code null} use the value of the
+	 *            {@code submodule.name.fetchRecurseSubmodules} option
+	 *            configured per submodule. If not specified there, use the
+	 *            value of the {@code fetch.recurseSubmodules} option configured
+	 *            in git config. If not configured in either, "on-demand" is the
+	 *            built-in default.
 	 * @return {@code this}
 	 * @since 4.7
 	 */
 	public FetchCommand setRecurseSubmodules(
-			FetchRecurseSubmodulesMode recurse) {
+			@Nullable FetchRecurseSubmodulesMode recurse) {
 		checkCallable();
 		submoduleRecurseMode = recurse;
 		return this;
@@ -474,4 +504,16 @@ public class FetchCommand extends TransportCommand<FetchCommand, FetchResult> {
 		return this;
 	}
 
+	/**
+	 * Register a progress callback.
+	 *
+	 * @param callback
+	 *            the callback
+	 * @return {@code this}
+	 * @since 4.8
+	 */
+	public FetchCommand setCallback(Callback callback) {
+		this.callback = callback;
+		return this;
+	}
 }

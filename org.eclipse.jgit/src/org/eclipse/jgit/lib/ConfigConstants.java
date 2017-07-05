@@ -108,6 +108,12 @@ public class ConfigConstants {
 	public static final String CONFIG_PULL_SECTION = "pull";
 
 	/**
+	 * The "merge" section
+	 * @since 4.9
+	 */
+	public static final String CONFIG_MERGE_SECTION = "merge";
+
+	/**
 	 * The "filter" section
 	 * @since 4.6
 	 */
@@ -289,6 +295,20 @@ public class ConfigConstants {
 	 * @since 4.3
 	 */
 	public static final String CONFIG_KEY_PRUNEPACKEXPIRE = "prunepackexpire";
+
+	/**
+	 * The "logexpiry" key
+	 *
+	 * @since 4.7
+	 */
+	public static final String CONFIG_KEY_LOGEXPIRY = "logExpiry";
+
+	/**
+	 * The "autodetach" key
+	 *
+	 * @since 4.7
+	 */
+	public static final String CONFIG_KEY_AUTODETACH = "autoDetach";
 
 	/**
 	 * The "aggressiveDepth" key

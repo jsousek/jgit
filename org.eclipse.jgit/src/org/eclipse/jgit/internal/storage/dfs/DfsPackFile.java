@@ -62,6 +62,7 @@ import java.util.zip.CRC32;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
+import org.eclipse.jgit.annotations.Nullable;
 import org.eclipse.jgit.errors.CorruptObjectException;
 import org.eclipse.jgit.errors.LargeObjectException;
 import org.eclipse.jgit.errors.MissingObjectException;
@@ -251,6 +252,8 @@ public final class DfsPackFile {
 
 			PackIndex idx;
 			try {
+				ctx.stats.readIdx++;
+				long start = System.nanoTime();
 				ReadableChannel rc = ctx.db.openFile(packDesc, INDEX);
 				try {
 					InputStream in = Channels.newInputStream(rc);
@@ -260,10 +263,11 @@ public final class DfsPackFile {
 						bs = (wantSize / bs) * bs;
 					else if (bs <= 0)
 						bs = wantSize;
-					in = new BufferedInputStream(in, bs);
-					idx = PackIndex.read(in);
+					idx = PackIndex.read(new BufferedInputStream(in, bs));
+					ctx.stats.readIdxBytes += rc.position();
 				} finally {
 					rc.close();
+					ctx.stats.readIdxMicros += elapsedMicros(start);
 				}
 			} catch (EOFException e) {
 				invalid = true;
@@ -284,6 +288,10 @@ public final class DfsPackFile {
 			setPackIndex(idx);
 			return idx;
 		}
+	}
+
+	private static long elapsedMicros(long start) {
+		return (System.nanoTime() - start) / 1000L;
 	}
 
 	final boolean isGarbage() {
@@ -314,6 +322,8 @@ public final class DfsPackFile {
 			long size;
 			PackBitmapIndex idx;
 			try {
+				ctx.stats.readBitmap++;
+				long start = System.nanoTime();
 				ReadableChannel rc = ctx.db.openFile(packDesc, BITMAP_INDEX);
 				try {
 					InputStream in = Channels.newInputStream(rc);
@@ -329,6 +339,8 @@ public final class DfsPackFile {
 				} finally {
 					size = rc.position();
 					rc.close();
+					ctx.stats.readIdxBytes += size;
+					ctx.stats.readIdxMicros += elapsedMicros(start);
 				}
 			} catch (EOFException e) {
 				IOException e2 = new IOException(MessageFormat.format(
@@ -478,15 +490,36 @@ public final class DfsPackFile {
 
 	private void copyPackThroughCache(PackOutputStream out, DfsReader ctx)
 			throws IOException {
-		long position = 12;
-		long remaining = length - (12 + 20);
-		while (0 < remaining) {
-			DfsBlock b = cache.getOrLoad(this, position, ctx);
-			int ptr = (int) (position - b.start);
-			int n = (int) Math.min(b.size() - ptr, remaining);
-			b.write(out, position, n);
-			position += n;
-			remaining -= n;
+		ReadableChannel rc = null;
+		try {
+			long position = 12;
+			long remaining = length - (12 + 20);
+			while (0 < remaining) {
+				DfsBlock b;
+				if (rc != null) {
+					b = cache.getOrLoad(this, position, ctx, rc);
+				} else {
+					b = cache.get(key, alignToBlock(position));
+					if (b == null) {
+						rc = ctx.db.openFile(packDesc, PACK);
+						int sz = ctx.getOptions().getStreamPackBufferSize();
+						if (sz > 0) {
+							rc.setReadAheadBytes(sz);
+						}
+						b = cache.getOrLoad(this, position, ctx, rc);
+					}
+				}
+
+				int ptr = (int) (position - b.start);
+				int n = (int) Math.min(b.size() - ptr, remaining);
+				b.write(out, position, n);
+				position += n;
+				remaining -= n;
+			}
+		} finally {
+			if (rc != null) {
+				rc.close();
+			}
 		}
 	}
 
@@ -769,15 +802,19 @@ public final class DfsPackFile {
 	}
 
 	DfsBlock getOrLoadBlock(long pos, DfsReader ctx) throws IOException {
-		return cache.getOrLoad(this, pos, ctx);
+		return cache.getOrLoad(this, pos, ctx, null);
 	}
 
-	DfsBlock readOneBlock(long pos, DfsReader ctx)
-			throws IOException {
+	DfsBlock readOneBlock(long pos, DfsReader ctx,
+			@Nullable ReadableChannel packChannel) throws IOException {
 		if (invalid)
 			throw new PackInvalidException(getPackName());
 
-		ReadableChannel rc = ctx.db.openFile(packDesc, PACK);
+		ctx.stats.readBlock++;
+		long start = System.nanoTime();
+		ReadableChannel rc = packChannel != null
+				? packChannel
+				: ctx.db.openFile(packDesc, PACK);
 		try {
 			int size = blockSize(rc);
 			pos = (pos / size) * size;
@@ -803,6 +840,7 @@ public final class DfsPackFile {
 			byte[] buf = new byte[size];
 			rc.position(pos);
 			int cnt = read(rc, ByteBuffer.wrap(buf, 0, size));
+			ctx.stats.readBlockBytes += cnt;
 			if (cnt != size) {
 				if (0 <= len) {
 					throw new EOFException(MessageFormat.format(
@@ -824,10 +862,12 @@ public final class DfsPackFile {
 				length = len = rc.size();
 			}
 
-			DfsBlock v = new DfsBlock(key, pos, buf);
-			return v;
+			return new DfsBlock(key, pos, buf);
 		} finally {
-			rc.close();
+			if (rc != packChannel) {
+				rc.close();
+			}
+			ctx.stats.readBlockMicros += elapsedMicros(start);
 		}
 	}
 
