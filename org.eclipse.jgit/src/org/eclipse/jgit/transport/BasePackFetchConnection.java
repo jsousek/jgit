@@ -525,11 +525,11 @@ public abstract class BasePackFetchConnection extends BasePackConnection
 			}
 			line.append('\n');
 			final StringBuilder builder = new StringBuilder(46);
-			// if (depth != Transport.DEPTH_INFINITE) {
+			if (depth != Transport.DEPTH_INFINITE) {
 				builder.append("deepen "); //$NON-NLS-1$
 				builder.append(depth);
 				builder.append('\n');
-			// }
+			}
 			System.out.println(Thread.currentThread().getName() + ":\t"
 					+ "BasePackFetchConnection.sendWants.line='"
 					+ line.toString() + "'");
